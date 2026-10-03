@@ -1259,15 +1259,22 @@ button {
 
 .match-card .connector {
   position: absolute;
-  z-index: 3;
+  z-index: 10;
   top: 50%;
   width: 43px;
   height: 43px;
-  border: 8px solid white;
+  border: 7px solid #ffffff;
   border-radius: 50%;
-  background: #d8cffb;
-  box-shadow: inset 0 0 0 5px #8968ec;
+  background: #f7f5ff;
+  box-shadow: inset 0 0 0 5px #8968ec, 0 3px 8px rgba(93, 75, 194, 0.22);
   transform: translateY(-50%);
+  transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  box-sizing: border-box;
+}
+
+.match-card .connector.is-matched {
+  background: #6f4ce3;
+  box-shadow: inset 0 0 0 4px #532fc7, 0 3px 8px rgba(93, 75, 194, 0.35);
 }
 
 .match-card.is-selected {
@@ -1276,7 +1283,7 @@ button {
 }
 
 .match-card.is-matched {
-  opacity: 0.72;
+  opacity: 0.88;
   border-color: #4fbd7a;
 }
 
@@ -1297,7 +1304,7 @@ button {
 
 .match-lines line {
   stroke: #6f4ce3;
-  stroke-width: 5px;
+  stroke-width: 6px;
   stroke-linecap: round;
   filter: drop-shadow(0 2px 3px rgb(66 46 145 / 25%));
 }
@@ -1306,6 +1313,7 @@ button {
   stroke: #8b68f0;
   stroke-width: 5px;
   stroke-dasharray: 10 6;
+  opacity: 0.85;
 }
 
 .match-card.source {
@@ -1632,16 +1640,21 @@ img.activity-badge {
 }
 
 img.activity-badge.badge-top {
-  top: 17px;
-  right: -65px;
-  bottom: 155px;
-  left: 65px;
-  height: 45px;
+  top: 10%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  width: 32%;
+  height: 25%;
 }
 
 img.activity-badge.badge-lower {
-  top: 54px;
-  height: 45px;
+  top: 10%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  width: 32%;
+  height: 25%;
 }
 
 .window-button:focus-visible img {
@@ -1659,22 +1672,22 @@ img.activity-badge.badge-lower {
   top: 10.5%;
   left: 36%;
   width: 28%;
-  height: 21%;
+  height: 25%;
 }
 
 .window-left,
 .window-right {
-  top: 38.8%;
-  width: 25%;
-  height: 20%;
+  top: 39.5%;
+  width: 28%;
+  height: 25%;
 }
 
 .window-left {
-  left: 15.3%;
+  left: 13.8%;
 }
 
 .window-right {
-  right: 15.3%;
+  right: 13.8%;
 }
 
 .door-button {
@@ -1708,28 +1721,29 @@ img.activity-badge.badge-lower {
   z-index: 7;
   left: 50%;
   display: block;
-  width: 42%;
+  width: 54%;
   height: auto;
+  max-height: 15%;
   object-fit: contain;
   pointer-events: none;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
 }
 
 img.window-stars.stars-top {
-  top: 144px;
-  right: -65px;
-  bottom: 37px;
-  left: 65px;
-  height: 17px;
+  top: 75.7%;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  width: 52%;
 }
 
 img.window-stars.stars-left,
 img.window-stars.stars-right {
-  top: 170px;
-  right: -58px;
-  bottom: -29px;
-  left: 58px;
-  height: 17px;
+  top: 75.7%;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  width: 52%;
 }
 
 .car-static {
