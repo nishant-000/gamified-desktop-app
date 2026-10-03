@@ -1,4 +1,12 @@
-import { useMemo, useState, type ReactNode } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
 import { neuronestIcons } from "./neuronestIcons"
 
 export type ModuleActivityKind = "drag" | "mcq" | "match"
@@ -515,6 +523,65 @@ function MatchingActivity({
   } | null>(null)
   const question = matchQuestions[questionIndex]
 
+  const layoutRef = useRef<HTMLDivElement>(null)
+  const sourceRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const targetRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const [layoutSize, setLayoutSize] = useState<{ width: number; height: number }>({
+    width: 1000,
+    height: 600,
+  })
+  const [sourcePositions, setSourcePositions] = useState<Record<number, { x: number; y: number }>>({})
+  const [targetPositions, setTargetPositions] = useState<Record<number, { x: number; y: number }>>({})
+
+  const updateDotPositions = useCallback(() => {
+    if (!layoutRef.current) return
+    const layoutRect = layoutRef.current.getBoundingClientRect()
+    if (layoutRect.width === 0 || layoutRect.height === 0) return
+
+    setLayoutSize({ width: layoutRect.width, height: layoutRect.height })
+
+    const newSources: Record<number, { x: number; y: number }> = {}
+    sourceRefs.current.forEach((el, index) => {
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      newSources[index] = {
+        x: rect.left + rect.width / 2 - layoutRect.left,
+        y: rect.top + rect.height / 2 - layoutRect.top,
+      }
+    })
+    setSourcePositions(newSources)
+
+    const newTargets: Record<number, { x: number; y: number }> = {}
+    targetRefs.current.forEach((el, index) => {
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      newTargets[index] = {
+        x: rect.left + rect.width / 2 - layoutRect.left,
+        y: rect.top + rect.height / 2 - layoutRect.top,
+      }
+    })
+    setTargetPositions(newTargets)
+  }, [])
+
+  useLayoutEffect(() => {
+    updateDotPositions()
+  }, [questionIndex, updateDotPositions])
+
+  useEffect(() => {
+    const handleResize = () => updateDotPositions()
+    window.addEventListener("resize", handleResize)
+    const observer = new ResizeObserver(() => {
+      updateDotPositions()
+    })
+    if (layoutRef.current) {
+      observer.observe(layoutRef.current)
+    }
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      observer.disconnect()
+    }
+  }, [updateDotPositions])
+
   const targetUsed = useMemo(() => new Set(Object.values(matches)), [matches])
 
   const selectTarget = (
@@ -551,7 +618,7 @@ function MatchingActivity({
 
   const renderMatchItem = (item: MatchItem) =>
     item.image ? (
-      <img src={imagePath(item.image)} alt="" />
+      <img src={imagePath(item.image)} alt="" draggable={false} />
     ) : (
       <strong>{item.label}</strong>
     )
@@ -566,7 +633,7 @@ function MatchingActivity({
       />
       <section className="module-content match-content">
         <Prompt>{question.prompt}</Prompt>
-        <div className="matching-layout">
+        <div className="matching-layout" ref={layoutRef}>
           <div className="match-column">
             {question.sources.map((item, index) => (
               <button
@@ -576,22 +643,42 @@ function MatchingActivity({
                   if (index in matches) return
                   event.currentTarget.setPointerCapture(event.pointerId)
                   setSelectedSource(index)
-                  setDragLine({
-                    source: index,
-                    x: 34.7,
-                    y: (index + 0.5) * 25,
-                  })
+                  const startPt = sourcePositions[index]
+                  if (layoutRef.current) {
+                    const bounds = layoutRef.current.getBoundingClientRect()
+                    setDragLine({
+                      source: index,
+                      x: startPt?.x ?? (event.clientX - bounds.left),
+                      y: startPt?.y ?? (event.clientY - bounds.top),
+                    })
+                  }
                 }}
                 onPointerMove={(event) => {
                   if (!dragLine || dragLine.source !== index) return
-                  const layout =
-                    event.currentTarget.closest<HTMLElement>(".matching-layout")
-                  if (!layout) return
-                  const bounds = layout.getBoundingClientRect()
+                  if (!layoutRef.current) return
+                  const bounds = layoutRef.current.getBoundingClientRect()
+                  
+                  // Check if cursor is hovering over a target dot or target card
+                  const targetEl = document
+                    .elementFromPoint(event.clientX, event.clientY)
+                    ?.closest<HTMLElement>("[data-target-index]")
+                  if (targetEl) {
+                    const targetIdx = Number(targetEl.dataset.targetIndex)
+                    const targetDot = targetPositions[targetIdx]
+                    if (targetDot) {
+                      setDragLine({
+                        source: index,
+                        x: targetDot.x,
+                        y: targetDot.y,
+                      })
+                      return
+                    }
+                  }
+
                   setDragLine({
                     source: index,
-                    x: ((event.clientX - bounds.left) / bounds.width) * 100,
-                    y: ((event.clientY - bounds.top) / bounds.height) * 100,
+                    x: event.clientX - bounds.left,
+                    y: event.clientY - bounds.top,
                   })
                 }}
                 onPointerUp={(event) => {
@@ -614,30 +701,40 @@ function MatchingActivity({
                 key={index}
               >
                 {renderMatchItem(item)}
-                <span className="connector" />
+                <span
+                  className="connector"
+                  ref={(el) => {
+                    sourceRefs.current[index] = el
+                  }}
+                />
               </button>
             ))}
           </div>
           <svg
             className="match-lines"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
+            viewBox={`0 0 ${layoutSize.width} ${layoutSize.height}`}
             aria-hidden="true"
           >
-            {Object.entries(matches).map(([source, target]) => (
-              <line
-                x1="34.7"
-                y1={(Number(source) + 0.5) * 25}
-                x2="65.3"
-                y2={(target + 0.5) * 25}
-                key={source}
-              />
-            ))}
-            {dragLine && (
+            {Object.entries(matches).map(([sourceStr, target]) => {
+              const source = Number(sourceStr)
+              const start = sourcePositions[source]
+              const end = targetPositions[target]
+              if (!start || !end) return null
+              return (
+                <line
+                  x1={start.x}
+                  y1={start.y}
+                  x2={end.x}
+                  y2={end.y}
+                  key={source}
+                />
+              )
+            })}
+            {dragLine && sourcePositions[dragLine.source] && (
               <line
                 className="is-dragging"
-                x1="34.7"
-                y1={(dragLine.source + 0.5) * 25}
+                x1={sourcePositions[dragLine.source].x}
+                y1={sourcePositions[dragLine.source].y}
                 x2={dragLine.x}
                 y2={dragLine.y}
               />
@@ -652,7 +749,12 @@ function MatchingActivity({
                 onClick={() => selectTarget(index)}
                 key={index}
               >
-                <span className="connector" />
+                <span
+                  className="connector"
+                  ref={(el) => {
+                    targetRefs.current[index] = el
+                  }}
+                />
                 {renderMatchItem(item)}
               </button>
             ))}

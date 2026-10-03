@@ -1235,9 +1235,18 @@ button {
   font-family: inherit;
   font-size: clamp(23px, 2.3vw, 40px);
   font-weight: 900;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
   transition:
     opacity 130ms ease,
     transform 130ms ease;
+}
+
+.match-card img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .match-card.source .connector {
@@ -1288,15 +1297,15 @@ button {
 
 .match-lines line {
   stroke: #6f4ce3;
-  stroke-width: 2.2;
+  stroke-width: 5px;
   stroke-linecap: round;
-  filter: drop-shadow(0 2px 1px rgb(66 46 145 / 20%));
+  filter: drop-shadow(0 2px 3px rgb(66 46 145 / 25%));
 }
 
 .match-lines line.is-dragging {
   stroke: #8b68f0;
-  stroke-width: 2.8;
-  stroke-dasharray: 4 2;
+  stroke-width: 5px;
+  stroke-dasharray: 10 6;
 }
 
 .match-card.source {
