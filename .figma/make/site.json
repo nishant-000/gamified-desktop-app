@@ -1,0 +1,10 @@
+{
+  "description": "Engage users with a gamified web application that utilizes custom images and icons for an interactive and visually appealing experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
