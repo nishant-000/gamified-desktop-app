@@ -66,28 +66,55 @@ export default function App() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [lessonOpen, setLessonOpen] = useState(true)
-  const [rightActivityStars, setRightActivityStars] = useState(1)
+  const [lessonCompleted, setLessonCompleted] = useState(false)
+  const [firstActivityCompleted, setFirstActivityCompleted] = useState(false)
   const [secondActivityCompleted, setSecondActivityCompleted] = useState(false)
+  const [thirdActivityCompleted, setThirdActivityCompleted] = useState(false)
+  const [rightActivityStars, setRightActivityStars] = useState(0)
+  const [leftActivityStars, setLeftActivityStars] = useState(0)
   const [topActivityStars, setTopActivityStars] = useState(0)
   const [activeActivity, setActiveActivity] =
-    useState<ActivityId>("drag-drop")
+    useState<ActivityId>("lesson")
   const [openedActivity, setOpenedActivity] = useState<ActivityId | null>(null)
   const [selectedButton, setSelectedButton] = useState<
     "door" | "top" | "left" | "right" | null
-  >(null)
+  >("door")
   const [doorIsHovered, setDoorIsHovered] = useState(false)
+
+  const isLessonCard = activeActivity === "lesson"
+  const isRightActivity = activeActivity === "drag-drop"
   const isPuzzleActivity = activeActivity === "puzzles"
   const isThirdActivity = activeActivity === "tick-correct"
-  const isLessonCard = activeActivity === "lesson"
+
+  const rightActivityIsLocked = !lessonCompleted
+  const leftActivityIsLocked = !firstActivityCompleted
   const topActivityIsLocked = !secondActivityCompleted
-  const rightWindowImage =
-    rightActivityStars === 3
+
+  const isCurrentCardLocked =
+    (isRightActivity && rightActivityIsLocked) ||
+    (isPuzzleActivity && leftActivityIsLocked) ||
+    (isThirdActivity && topActivityIsLocked)
+
+  const rightWindowImage = rightActivityIsLocked
+    ? lockedWindow
+    : rightActivityStars === 3
       ? selectedButton === "right"
         ? completedWindowSelected
         : completedWindowNormal
       : selectedButton === "right"
         ? availableWindowSelected
         : availableWindowNormal
+
+  const leftWindowImage = leftActivityIsLocked
+    ? lockedWindow
+    : leftActivityStars === 3
+      ? selectedButton === "left"
+        ? completedWindowSelected
+        : completedWindowNormal
+      : selectedButton === "left"
+        ? availableWindowSelected
+        : availableWindowNormal
+
   const topWindowImage = topActivityIsLocked
     ? lockedWindow
     : topActivityStars === 3
@@ -189,9 +216,25 @@ export default function App() {
         onComplete={(stars) => {
           if (openedActivity === "drag-drop") {
             setRightActivityStars(stars)
-            setSecondActivityCompleted(true)
+            setFirstActivityCompleted(true)
+            setActiveActivity("puzzles")
+            setSelectedButton("left")
+            setLessonOpen(true)
           }
-          if (openedActivity === "tick-correct") setTopActivityStars(stars)
+          if (openedActivity === "puzzles") {
+            setLeftActivityStars(stars)
+            setSecondActivityCompleted(true)
+            setActiveActivity("tick-correct")
+            setSelectedButton("top")
+            setLessonOpen(true)
+          }
+          if (openedActivity === "tick-correct") {
+            setTopActivityStars(stars)
+            setThirdActivityCompleted(true)
+            setActiveActivity("tick-correct")
+            setSelectedButton("top")
+            setLessonOpen(true)
+          }
         }}
       />
     )
@@ -200,8 +243,11 @@ export default function App() {
   if (openedActivity === "lesson") {
     return (
       <LessonSlides
-        onBack={() => setOpenedActivity(null)}
+        onBack={() => {
+          setOpenedActivity(null)
+        }}
         onStartActivities={() => {
+          setLessonCompleted(true)
           setOpenedActivity(null)
           setActiveActivity("drag-drop")
           setSelectedButton("right")
@@ -251,22 +297,10 @@ export default function App() {
                 setActiveActivity("tick-correct")
                 setLessonOpen(true)
               }}
-              style={{ height: "200px" }}
             >
               <img
                 src={topWindowImage}
                 alt=""
-                style={{
-                  boxShadow: "none",
-                  filter: "none",
-                  backdropFilter: "none",
-                  padding: "0px",
-                  borderStyle: "none",
-                  borderColor: "rgba(0, 0, 0, 0)",
-                  borderWidth: "0px",
-                  margin: "0px",
-                  height: "170px",
-                }}
               />
               <img
                 className="activity-badge badge-top"
@@ -283,7 +317,11 @@ export default function App() {
             <button
               className={`window-button window-left${selectedButton === "left" ? " is-selected" : ""}`}
               type="button"
-              aria-label="Completed lesson"
+              aria-label={
+                leftActivityIsLocked
+                  ? "Preview locked Multiple Choice activity"
+                  : "Open Multiple Choice activity"
+              }
               aria-pressed={selectedButton === "left"}
               onPointerDown={() => setSelectedButton("left")}
               onClick={() => {
@@ -293,13 +331,8 @@ export default function App() {
               }}
             >
               <img
-                src={
-                  selectedButton === "left"
-                    ? completedWindowSelected
-                    : completedWindowNormal
-                }
+                src={leftWindowImage}
                 alt=""
-                style={{ height: "260px" }}
               />
               <img
                 className="activity-badge badge-lower"
@@ -308,14 +341,18 @@ export default function App() {
               />
               <ProgressStars
                 className="stars-left"
-                value={3}
-                label="Completed activity progress"
+                value={leftActivityStars}
+                label="Multiple choice activity progress"
               />
             </button>
             <button
               className={`window-button window-right${selectedButton === "right" ? " is-selected" : ""}`}
               type="button"
-              aria-label="Open drag and drop lesson"
+              aria-label={
+                rightActivityIsLocked
+                  ? "Preview locked Drag and Drop activity"
+                  : "Open Drag and Drop activity"
+              }
               aria-pressed={selectedButton === "right"}
               onPointerDown={() => setSelectedButton("right")}
               onClick={() => {
@@ -327,7 +364,6 @@ export default function App() {
               <img
                 src={rightWindowImage}
                 alt=""
-                style={{ height: "260px" }}
               />
               <img
                 className="activity-badge badge-lower"
@@ -443,15 +479,13 @@ export default function App() {
                     }}
                   >
                     <img
-                      src={
-                        isPuzzleActivity
-                          ? "/assets/activity-card-stars-3.png"
-                          : `/assets/activity-card-stars-${
-                              isThirdActivity
-                                ? topActivityStars
-                                : rightActivityStars
-                            }.png`
-                      }
+                      src={`/assets/activity-card-stars-${
+                        isThirdActivity
+                          ? topActivityStars
+                          : isPuzzleActivity
+                            ? leftActivityStars
+                            : rightActivityStars
+                      }.png`}
                       alt=""
                       style={{
                         width: "30.5%",
@@ -598,18 +632,26 @@ export default function App() {
                     {isLessonCard
                       ? "Explore the lesson and learn something new."
                       : isThirdActivity
-                      ? "Match each picture with the correct answer."
+                      ? topActivityIsLocked
+                        ? "Complete Activity 2 (Multiple Choice) to unlock this activity."
+                        : "Match each picture with the correct answer."
                       : isPuzzleActivity
-                        ? "Choose the correct answer for each question."
-                        : "Drag the correct item to the right place."}
+                        ? leftActivityIsLocked
+                          ? "Complete Activity 1 (Drag & Drop) to unlock this activity."
+                          : "Choose the correct answer for each question."
+                        : rightActivityIsLocked
+                          ? "Complete the Lesson first to unlock Activity 1."
+                          : "Drag the correct item to the right place."}
                     <br />
                     {isLessonCard
                       ? "Press Start when you are ready to begin."
-                      : isThirdActivity
-                      ? "Complete activity two first to unlock this lesson."
-                      : isPuzzleActivity
-                        ? "This helps you recognize details and solve problems."
-                        : "This helps you practice and remember what you have learned."}
+                      : isCurrentCardLocked
+                        ? "Finish the preceding task to continue your journey."
+                        : isThirdActivity
+                          ? "This helps you connect words with their meanings."
+                          : isPuzzleActivity
+                            ? "This helps you recognize details and solve problems."
+                            : "This helps you practice and remember what you have learned."}
                   </span>
                   <img
                     src={assets.speaker}
@@ -631,7 +673,7 @@ export default function App() {
                     flexShrink: 0,
                     borderRadius: "999px",
                     background:
-                      isThirdActivity && topActivityIsLocked
+                      isCurrentCardLocked
                         ? "#8b1d24"
                         : "#084eac",
                     boxShadow: "0 3px 4px rgba(106, 57, 0, 0.17)",
@@ -646,20 +688,20 @@ export default function App() {
                       justifyContent: "center",
                       gap: "2.7%",
                       borderTop:
-                        isThirdActivity && topActivityIsLocked
+                        isCurrentCardLocked
                           ? "2px solid #ffb0a8"
                           : "2px solid #87c6ff",
                       borderRight:
-                        isThirdActivity && topActivityIsLocked
+                        isCurrentCardLocked
                           ? "1px solid #ffb0a8"
                           : "1px solid #87c6ff",
                       borderLeft:
-                        isThirdActivity && topActivityIsLocked
+                        isCurrentCardLocked
                           ? "1px solid #ffb0a8"
                           : "1px solid #87c6ff",
                       borderRadius: "999px",
                       background:
-                        isThirdActivity && topActivityIsLocked
+                        isCurrentCardLocked
                           ? "linear-gradient(180deg, #ff5a50 0%, #c51f2b 100%)"
                           : "linear-gradient(180deg, #3b9bff 0%, #0a62d6 100%)",
                     }}
@@ -673,11 +715,11 @@ export default function App() {
                         fontWeight: 900,
                       }}
                     >
-                      {isThirdActivity && topActivityIsLocked
+                      {isCurrentCardLocked
                         ? "Locked"
                         : "Start"}
                     </span>
-                    {isThirdActivity && topActivityIsLocked ? (
+                    {isCurrentCardLocked ? (
                       <svg
                         width="24"
                         height="28"
@@ -758,17 +800,21 @@ export default function App() {
             <button
               className="start-button"
               type="button"
-              disabled={isThirdActivity && topActivityIsLocked}
+              disabled={isCurrentCardLocked}
               aria-label={
                 isLessonCard
                   ? "Start lesson"
                   : isThirdActivity
                   ? topActivityIsLocked
-                    ? "Match the Following lesson is locked"
-                    : "Start Match the Following lesson"
+                    ? "Match the Following activity is locked"
+                    : "Start Match the Following activity"
                   : isPuzzleActivity
-                    ? "Start Multiple Choice lesson"
-                    : "Start Drag and Drop lesson"
+                    ? leftActivityIsLocked
+                      ? "Multiple Choice activity is locked"
+                      : "Start Multiple Choice activity"
+                    : rightActivityIsLocked
+                      ? "Drag and Drop activity is locked"
+                      : "Start Drag and Drop activity"
               }
               style={{
                 display: "flex",
@@ -777,20 +823,20 @@ export default function App() {
                 gap: "16px",
                 color: "white",
                 cursor:
-                  isThirdActivity && topActivityIsLocked
+                  isCurrentCardLocked
                     ? "not-allowed"
                     : "pointer",
                 border: "none",
                 borderTop:
-                  isThirdActivity && topActivityIsLocked
+                  isCurrentCardLocked
                     ? "2px solid #ffb0a8"
                     : "2px solid #87c6ff",
                 background:
-                  isThirdActivity && topActivityIsLocked
+                  isCurrentCardLocked
                     ? "linear-gradient(180deg, #ff5a50 0%, #c51f2b 100%)"
                     : "linear-gradient(180deg, #3b9bff 0%, #0a62d6 100%)",
                 boxShadow:
-                  isThirdActivity && topActivityIsLocked
+                  isCurrentCardLocked
                     ? "0 4px 0 #8b1d24"
                     : "0 4px 0 #084eac, 0 7px 4px rgba(106, 57, 0, 0.17)",
                 fontFamily: '"Nunito:Black", Nunito, sans-serif',
@@ -842,13 +888,15 @@ export default function App() {
                 }
               }}
               onClick={() => {
-                setOpenedActivity(activeActivity)
+                if (!isCurrentCardLocked) {
+                  setOpenedActivity(activeActivity)
+                }
               }}
             >
               <span>
-                {isThirdActivity && topActivityIsLocked ? "Locked" : "Start"}
+                {isCurrentCardLocked ? "Locked" : "Start"}
               </span>
-              {isThirdActivity && topActivityIsLocked ? (
+              {isCurrentCardLocked ? (
                 <svg
                   width="24"
                   height="28"

@@ -616,6 +616,22 @@ function MatchingActivity({
     }
   }
 
+  // Calculate outer edge intersection point so the line ends right at the circle's border
+  const getPerimeterPoint = (
+    center: { x: number; y: number },
+    target: { x: number; y: number },
+    radius = 21,
+  ) => {
+    const dx = target.x - center.x
+    const dy = target.y - center.y
+    const dist = Math.hypot(dx, dy)
+    if (dist <= radius) return center
+    return {
+      x: center.x + (dx / dist) * radius,
+      y: center.y + (dy / dist) * radius,
+    }
+  }
+
   const renderMatchItem = (item: MatchItem) =>
     item.image ? (
       <img src={imagePath(item.image)} alt="" draggable={false} />
@@ -702,7 +718,7 @@ function MatchingActivity({
               >
                 {renderMatchItem(item)}
                 <span
-                  className="connector"
+                  className={`connector${index in matches ? " is-matched" : ""}`}
                   ref={(el) => {
                     sourceRefs.current[index] = el
                   }}
@@ -717,28 +733,36 @@ function MatchingActivity({
           >
             {Object.entries(matches).map(([sourceStr, target]) => {
               const source = Number(sourceStr)
-              const start = sourcePositions[source]
-              const end = targetPositions[target]
-              if (!start || !end) return null
+              const startCenter = sourcePositions[source]
+              const endCenter = targetPositions[target]
+              if (!startCenter || !endCenter) return null
+              // Compute outer perimeter contact points (radius 21.5px matches the 43px connector)
+              const startEdge = getPerimeterPoint(startCenter, endCenter, 21.5)
+              const endEdge = getPerimeterPoint(endCenter, startCenter, 21.5)
               return (
                 <line
-                  x1={start.x}
-                  y1={start.y}
-                  x2={end.x}
-                  y2={end.y}
+                  x1={startEdge.x}
+                  y1={startEdge.y}
+                  x2={endEdge.x}
+                  y2={endEdge.y}
                   key={source}
                 />
               )
             })}
-            {dragLine && sourcePositions[dragLine.source] && (
-              <line
-                className="is-dragging"
-                x1={sourcePositions[dragLine.source].x}
-                y1={sourcePositions[dragLine.source].y}
-                x2={dragLine.x}
-                y2={dragLine.y}
-              />
-            )}
+            {dragLine && sourcePositions[dragLine.source] && (() => {
+              const startCenter = sourcePositions[dragLine.source]
+              const endPoint = { x: dragLine.x, y: dragLine.y }
+              const startEdge = getPerimeterPoint(startCenter, endPoint, 21.5)
+              return (
+                <line
+                  className="is-dragging"
+                  x1={startEdge.x}
+                  y1={startEdge.y}
+                  x2={endPoint.x}
+                  y2={endPoint.y}
+                />
+              )
+            })()}
           </svg>
           <div className="match-column">
             {question.targets.map((item, index) => (
@@ -750,7 +774,7 @@ function MatchingActivity({
                 key={index}
               >
                 <span
-                  className="connector"
+                  className={`connector${targetUsed.has(index) ? " is-matched" : ""}`}
                   ref={(el) => {
                     targetRefs.current[index] = el
                   }}
