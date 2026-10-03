@@ -216,7 +216,6 @@ export default function App() {
       <section
         className="game-stage"
         aria-label="Learning adventure"
-        style={{ position: "fixed" }}
         onPointerDownCapture={(event) => {
           if (
             !(event.target as Element).closest(
@@ -251,22 +250,11 @@ export default function App() {
                 setActiveActivity("tick-correct")
                 setLessonOpen(true)
               }}
-              style={{ height: "200px" }}
             >
               <img
                 src={topWindowImage}
                 alt=""
-                style={{
-                  boxShadow: "none",
-                  filter: "none",
-                  backdropFilter: "none",
-                  padding: "0px",
-                  borderStyle: "none",
-                  borderColor: "rgba(0, 0, 0, 0)",
-                  borderWidth: "0px",
-                  margin: "0px",
-                  height: "170px",
-                }}
+                className="window-frame-img"
               />
               <img
                 className="activity-badge badge-top"
@@ -299,7 +287,7 @@ export default function App() {
                     : completedWindowNormal
                 }
                 alt=""
-                style={{ height: "260px" }}
+                className="window-frame-img"
               />
               <img
                 className="activity-badge badge-lower"
@@ -327,7 +315,7 @@ export default function App() {
               <img
                 src={rightWindowImage}
                 alt=""
-                style={{ height: "260px" }}
+                className="window-frame-img"
               />
               <img
                 className="activity-badge badge-lower"

@@ -33,10 +33,11 @@ button {
 }
 
 .app-shell {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   background: #72c2ea;
 }
@@ -248,8 +249,9 @@ button {
 .lesson-screen {
   position: fixed;
   inset: 0;
-  display: grid;
-  place-items: start center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   background: #d8d1fb;
   font-family: "Nunito:Black", Nunito, sans-serif;
@@ -316,8 +318,11 @@ button {
 
 .lesson-frame {
   position: relative;
-  width: min(100vw, 177.683vh);
-  aspect-ratio: 1672 / 941;
+  width: min(96vw, 170.667vh);
+  height: min(96vh, 54vw);
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   color: #1e1085;
   border: 2px solid #c5b9f7;
@@ -826,8 +831,10 @@ button {
   --module-line: #c8bcff;
   position: fixed;
   inset: 0;
-  min-width: 860px;
-  min-height: 620px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   color: var(--module-deep);
   background:
@@ -965,31 +972,34 @@ button {
 .module-content {
   position: relative;
   z-index: 2;
-  height: calc(100vh - max(76px, 11.5vh));
-  padding: 3.5vh 5vw 4vh;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 4vw 3vh;
 }
 
 .module-prompt {
   display: flex;
-  width: min(89vw, 1410px);
-  min-height: 112px;
-  margin: 0 auto 3vh;
-  padding: 12px 32px 12px 18px;
+  width: min(92vw, 1410px);
+  min-height: clamp(68px, 10vh, 100px);
+  margin: 0 auto 2vh;
+  padding: 1vh 2vw;
   align-items: center;
-  gap: 30px;
+  gap: clamp(14px, 2vw, 28px);
   border-radius: 35px;
   background: rgb(255 255 255 / 86%);
   box-shadow: 0 5px 14px rgb(83 64 176 / 15%);
-  font-size: clamp(25px, 2.8vw, 47px);
+  font-size: clamp(20px, 2.4vw, 42px);
   font-weight: 900;
-  line-height: 1.12;
+  line-height: 1.15;
 }
 
 .prompt-speaker {
   position: relative;
-  width: 98px;
-  height: 98px;
-  flex: 0 0 98px;
+  width: clamp(54px, 6.5vh, 84px);
+  height: clamp(54px, 6.5vh, 84px);
+  flex: 0 0 clamp(54px, 6.5vh, 84px);
   object-fit: contain;
   border-radius: 50%;
   background: transparent;
@@ -1040,9 +1050,9 @@ button {
 .drag-layout,
 .mcq-layout {
   display: grid;
-  width: min(90vw, 1450px);
-  height: calc(100% - 145px);
-  min-height: 410px;
+  flex: 1;
+  min-height: 0;
+  width: min(92vw, 1450px);
   margin: 0 auto;
   gap: 2.5vw;
   grid-template-columns: 1.05fr 1.1fr;
@@ -1208,9 +1218,9 @@ button {
 .matching-layout {
   position: relative;
   display: grid;
-  width: min(90vw, 1420px);
-  height: calc(100% - 145px);
-  min-height: 430px;
+  flex: 1;
+  min-height: 0;
+  width: min(92vw, 1420px);
   margin: 0 auto;
   gap: 29%;
   grid-template-columns: 1fr 1fr;
@@ -1514,7 +1524,10 @@ button {
 
 .game-stage {
   position: relative;
-  width: max(100vw, 133.333vh);
+  width: min(100vw, 133.333vh);
+  height: min(100vh, 75vw);
+  max-width: 100vw;
+  max-height: 100vh;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   isolation: isolate;
@@ -1624,28 +1637,30 @@ img.activity-badge {
   z-index: 9;
   left: 50%;
   display: block;
-  width: 30%;
-  height: auto;
+  width: 32%;
+  height: 25%;
   object-fit: contain;
   pointer-events: none;
   transform: translateX(-50%);
 }
 
 img.activity-badge.badge-top {
-  top: 17px;
-  right: -65px;
-  bottom: 155px;
-  left: 65px;
-  height: 45px;
+  top: 10%;
 }
 
 img.activity-badge.badge-lower {
-  top: 54px;
-  height: 45px;
+  top: 22%;
 }
 
 .window-button:focus-visible img {
   filter: drop-shadow(0 0 0.8vh white);
+}
+
+.window-button img.window-frame-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
 }
 
 .window-button img {
@@ -1708,28 +1723,20 @@ img.activity-badge.badge-lower {
   z-index: 7;
   left: 50%;
   display: block;
-  width: 42%;
-  height: auto;
+  width: 44%;
+  height: 10%;
   object-fit: contain;
   pointer-events: none;
   transform: translateX(-50%);
 }
 
 img.window-stars.stars-top {
-  top: 144px;
-  right: -65px;
-  bottom: 37px;
-  left: 65px;
-  height: 17px;
+  bottom: 16%;
 }
 
 img.window-stars.stars-left,
 img.window-stars.stars-right {
-  top: 170px;
-  right: -58px;
-  bottom: -29px;
-  left: 58px;
-  height: 17px;
+  bottom: 8%;
 }
 
 .car-static {
