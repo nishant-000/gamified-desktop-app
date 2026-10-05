@@ -8,8 +8,9 @@ import completedWindowNormal from "../emotions-window-assets/window-completed-no
 import completedWindowSelected from "../emotions-window-assets/window-completed-selected.png"
 import lockedWindow from "../emotions-window-assets/window-locked-normal.png"
 import lessonImage from "../card images/image 38.png"
-import puzzleActivityImage from "@/imports/image_39.png"
-import tickCorrectActivityImage from "@/imports/image_51-2.png"
+import puzzleActivityImage from "@/imports/image_51-5.png"
+import tickCorrectActivityImage from "@/imports/image_41-4.png"
+import dragDropActivityImage from "@/imports/image_39-10.png"
 import LessonSlides, { lessonImageUrls } from "./LessonSlides"
 import ModuleActivities, {
   moduleActivityImageUrls,
@@ -342,7 +343,7 @@ export default function App() {
               <ProgressStars
                 className="stars-left"
                 value={leftActivityStars}
-                label="Multiple choice activity progress"
+                label="Multiple Choice activity progress"
               />
             </button>
             <button
@@ -502,15 +503,34 @@ export default function App() {
                     display: "flex",
                     height: "10.2%",
                     marginTop: "1.3%",
-                    paddingLeft: "4.7%",
+                    padding: isLessonCard ? "0 4.7%" : "0 2% 0 4.7%",
                     flexShrink: 0,
                     alignItems: "stretch",
                   }}
                 >
+                  {!isLessonCard && (
+                    <img
+                      src={
+                        isThirdActivity
+                          ? assets.activityCheck
+                          : isPuzzleActivity
+                            ? assets.activityPuzzle
+                            : assets.activityHand
+                      }
+                      alt=""
+                      style={{
+                        width: "13.5%",
+                        height: "125%",
+                        marginTop: "-1.3%",
+                        marginRight: "-1.3%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  )}
                   <div
                     style={{
                       display: "flex",
-                      padding: "0 3.5% 0 8%",
+                      padding: isLessonCard ? "0 3.5% 0 8%" : "0 8% 0 3.5%",
                       flex: isLessonCard ? "0 0 60%" : 1,
                       margin: isLessonCard ? "0 auto" : undefined,
                       alignItems: "center",
@@ -547,25 +567,6 @@ export default function App() {
                           : "Drag and Drop"}
                     </span>
                   </div>
-                  {!isLessonCard && (
-                    <img
-                      src={
-                        isThirdActivity
-                          ? assets.activityCheck
-                          : isPuzzleActivity
-                            ? assets.activityPuzzle
-                            : assets.activityHand
-                      }
-                      alt=""
-                      style={{
-                        width: "13.5%",
-                        height: "125%",
-                        marginTop: "-1.3%",
-                        marginLeft: "-1.3%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  )}
                 </div>
 
                 <img
@@ -576,7 +577,7 @@ export default function App() {
                       ? tickCorrectActivityImage
                       : isPuzzleActivity
                       ? puzzleActivityImage
-                      : assets.dragDropActivity
+                      : dragDropActivityImage
                   }
                   alt={
                     isLessonCard
@@ -590,14 +591,12 @@ export default function App() {
                   style={{
                     minHeight: 0,
                     width: "100%",
+                    height: "100%",
                     marginTop: "1.9%",
                     flex: 1,
                     border: "2px solid #e7bc74",
                     borderRadius: "3.8%",
-                    objectFit:
-                      isLessonCard || isPuzzleActivity || isThirdActivity
-                        ? "fill"
-                        : "cover",
+                    objectFit: "fill",
                     imageRendering: "auto",
                   }}
                 />
